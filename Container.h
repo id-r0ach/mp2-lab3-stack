@@ -1,18 +1,38 @@
 #pragma once
 #include <iostream>
 #include <algorithm>
+#include <climits>
 template <typename T>
 class Container {
 private:
-	int size;
+	size_t size; // реальный размер(макс количество элементов)
 	T* pmem;
+	size_t count; // реальное количество элементов
+
+	void resize() {
+		size_t new_size;
+		if (size == 0) {
+			new_size = 1;
+		}
+		else {
+			new_size = size * 2;
+		}
+		T* new_pmem = new T[new_size];
+		for (size_t i = 0; i < count; i++) {
+			new_pmem[i] = pmem[i];
+		}
+		delete[] pmem;
+		pmem = new_pmem;
+		size = new_size;
+	}
 
 public:
-	Container(int _size = 10) {
-		if (_size <= 0) {
+	Container(size_t _size = 10) {
+		if (_size > UINT_MAX || _size == 0) {
 			throw "Размер меньше 0";
 		}
 		size = _size;
+		count = 0;
 		pmem = new T[size];
 	}
 	~Container() {
@@ -20,16 +40,18 @@ public:
 			delete[] pmem;
 		}
 	}
-	Container(const Container& c) : size(c.size) {
+	Container(const Container& c) : size(c.size), count(c.count) {
 		pmem = new T[size];
-		for (int i = 0; i < size; i++) {
+		for (size_t i = 0; i < count; i++) {
 			pmem[i] = c.pmem[i];
 		}
 	}
 	Container(Container&& c) noexcept {
 		size = c.size;
 		pmem = c.pmem;
+		count = c.count;
 		c.size = 0;
+		c.count = 0;
 		c.pmem = nullptr;
 	}
 
@@ -37,11 +59,12 @@ public:
 	Container& operator=(const Container& c) {
 		if (this != &c) {
 			T* new_pmem = new T[c.size];
-			for (int i = 0; i < c.size; i++) {
+			for (size_t i = 0; i < c.count; i++) {
 				new_pmem[i] = c.pmem[i];
 			}
 			delete[] pmem;
 			pmem = new_pmem;
+			count = c.count;
 			size = c.size;
 		}
 		return *this;
@@ -51,6 +74,8 @@ public:
 			size = c.size;
 			delete[] pmem;
 			pmem = c.pmem;
+			count = c.count;
+			c.count = 0;
 			c.size = 0;
 			c.pmem = nullptr;
 		}
@@ -59,19 +84,37 @@ public:
 
 
 	T& operator[](int index) {
-		if (index < 0 || index >= size) {
+		if (index < 0 || index >= count) {
 			throw "Неверный индекс";
 		}
 		return pmem[index];
 	}
 	const T& operator[](int index) const {
-		if (index < 0 || index >= size) {
+		if (index < 0 || index >= count) {
 			throw "Неверный индекс";
 		}
 		return pmem[index];
 	}
 
+	void push_back(const T& elem) {
+		if (count >= size) {
+			resize();
+		}
+		pmem[count++] = elem;
+	}
 
+	T pop_back() {
+		if (count == 0) {
+			throw "Контейнер пустой";
+		}
+		return pmem[--count];
+	}
+
+	void clear() noexcept {
+		count = 0;
+	}
+
+	/*
 	void resize(const int& _size) {
 		int new_size = size + _size;
 		if (new_size <= 0) {
@@ -86,27 +129,26 @@ public:
 		pmem = new_pmem;
 		size = new_size;
 	}
-
+	*/
 	friend std::ostream& operator<<(std::ostream& os, const Container& c) {
-		for (int i = 0; i < c.size; i++) {
+		for (int i = 0; i < c.count; i++) {
 			os << c.pmem[i] << " ";
 		}
 		return os;
 	}
 	friend std::istream& operator>>(std::istream& is, Container& c) {
-		std::cout << "В первой строке введите размер" << std::endl
-			<< "Во второй значения через пробел" << std::endl;
-		is >> c.size;
+		is >> c.count;
+		c.size = c.count * 2;
 		delete[] c.pmem;
 		c.pmem = new T[c.size];
-		for (int i = 0; i < c.size; i++) {
+		for (int i = 0; i < c.count; i++) {
 			is >> c.pmem[i];
 		}
 		return is;
 	}
 
 
-
+	/*
 	Container operator+(const Container& _c) {
 		Container res(size + _c.size);
 		for (int i = 0; i < size; i++) {
@@ -168,5 +210,6 @@ public:
 		this->resize(-c.size);
 		return *this;
 	}
+	*/
 };
 
