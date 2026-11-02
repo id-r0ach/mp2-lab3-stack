@@ -25,21 +25,30 @@ public:
 	}
 	TDynamicStack(const TDynamicStack& st) {
 		size = st.size;
-		pMem = new T[size];
 		top_i = st.top_i;
-		for (int i = 0; i <= top_i; i++) {
-			pMem[i] = st.pMem[i];
+		if (size > 0) {
+			pMem = new T[size];
+			for (int i = 0; i <= top_i; ++i) {
+				pMem[i] = st.pMem[i];
+			}
+		}
+		else {
+			pMem = nullptr;
 		}
 	}
 	TDynamicStack& operator=(const TDynamicStack& st) {
 		if (this != &st) {
-			size = st.size;
-			delete[] pMem;
-			pMem = new T[size];
-			top_i = st.top_i;
-			for (int i = 0; i <= top_i; i++) {
-				pMem[i] = st.pMem[i];
+			T* new_pMem = nullptr;
+			if (st.size > 0) {
+				new_pMem = new T[st.size];
+				for (int i = 0; i <= st.top_i; ++i) {
+					new_pMem[i] = st.pMem[i];
+				}
 			}
+			delete[] pMem;
+			pMem = new_pMem;
+			size = st.size;
+			top_i = st.top_i;
 		}
 		return *this;
 	}
@@ -82,6 +91,9 @@ public:
 
 	// Методы пустой/целый
 	bool IsFull() const noexcept {
+		if (size == 0) {
+			return 0;
+		}
 		return top_i == size - 1;
 	}
 	bool IsEmpty() const noexcept {
@@ -90,17 +102,24 @@ public:
 
 	// Вставить/получить элемент
 	void push(const T& elem) {
-		if (IsFull()) {
+		if (IsFull() || pMem == nullptr) {
 			throw "Stack is full";
 		}
 		pMem[++top_i] = elem;
 	}
 	T pop() {
-		if (IsEmpty()) {
+		if (IsEmpty() || pMem == nullptr) {
 			throw "Stack is empty";
 		}
 		return pMem[top_i--];
 	}
+	T top() const {
+		if (IsEmpty() || pMem == nullptr) {
+			throw "Stack is empty";
+		}
+		return pMem[top_i];
+	}
+
 
 	void clear() noexcept {
 		top_i = -1;
