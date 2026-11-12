@@ -5,17 +5,17 @@
 template <typename T>
 class Container {
 private:
-	size_t size; // реальный размер(макс количество элементов)
+	size_t capacity; // реальный размер(макс количество элементов)
 	T* pmem;
 	size_t count; // реальное количество элементов
 
 	void resize() {
 		size_t new_size;
-		if (size == 0) {
+		if (capacity == 0) {
 			new_size = 1;
 		}
 		else {
-			new_size = size * 2;
+			new_size = capacity * 2;
 		}
 		T* new_pmem = new T[new_size];
 		for (size_t i = 0; i < count; i++) {
@@ -23,7 +23,7 @@ private:
 		}
 		delete[] pmem;
 		pmem = new_pmem;
-		size = new_size;
+		capacity = new_size;
 	}
 
 public:
@@ -31,26 +31,26 @@ public:
 		if (_size > UINT_MAX || _size == 0) {
 			throw "Размер меньше 0";
 		}
-		size = _size;
+		capacity = _size;
 		count = 0;
-		pmem = new T[size];
+		pmem = new T[capacity];
 	}
 	~Container() {
 		if (pmem != nullptr) {
 			delete[] pmem;
 		}
 	}
-	Container(const Container& c) : size(c.size), count(c.count) {
-		pmem = new T[size];
+	Container(const Container& c) : capacity(c.capacity), count(c.count) {
+		pmem = new T[capacity];
 		for (size_t i = 0; i < count; i++) {
 			pmem[i] = c.pmem[i];
 		}
 	}
 	Container(Container&& c) noexcept {
-		size = c.size;
+		capacity = c.capacity;
 		pmem = c.pmem;
 		count = c.count;
-		c.size = 0;
+		c.capacity = 0;
 		c.count = 0;
 		c.pmem = nullptr;
 	}
@@ -58,25 +58,25 @@ public:
 
 	Container& operator=(const Container& c) {
 		if (this != &c) {
-			T* new_pmem = new T[c.size];
+			T* new_pmem = new T[c.capacity];
 			for (size_t i = 0; i < c.count; i++) {
 				new_pmem[i] = c.pmem[i];
 			}
 			delete[] pmem;
 			pmem = new_pmem;
 			count = c.count;
-			size = c.size;
+			capacity = c.capacity;
 		}
 		return *this;
 	}
 	Container& operator=(Container&& c) noexcept {
 		if (this != &c) {
-			size = c.size;
+			capacity = c.capacity;
 			delete[] pmem;
 			pmem = c.pmem;
 			count = c.count;
 			c.count = 0;
-			c.size = 0;
+			c.capacity = 0;
 			c.pmem = nullptr;
 		}
 		return *this;
@@ -97,7 +97,7 @@ public:
 	}
 
 	void push_back(const T& elem) {
-		if (count >= size) {
+		if (count >= capacity) {
 			resize();
 		}
 		pmem[count++] = elem;
@@ -116,18 +116,18 @@ public:
 
 	/*
 	void resize(const int& _size) {
-		int new_size = size + _size;
+		int new_size = capacity + _size;
 		if (new_size <= 0) {
 			throw "Размер меньше 0";
 		}
-		T* new_pmem = new T[size + _size];
-		int min_size = std::min(new_size, size);
+		T* new_pmem = new T[capacity + _size];
+		int min_size = std::min(new_size, capacity);
 		for (int i = 0; i < min_size; i++) {
 			new_pmem[i] = pmem[i];
 		}
 		delete[] pmem;
 		pmem = new_pmem;
-		size = new_size;
+		capacity = new_size;
 	}
 	*/
 	friend std::ostream& operator<<(std::ostream& os, const Container& c) {
@@ -138,24 +138,28 @@ public:
 	}
 	friend std::istream& operator>>(std::istream& is, Container& c) {
 		is >> c.count;
-		c.size = c.count * 2;
+		c.capacity = c.count * 2;
 		delete[] c.pmem;
-		c.pmem = new T[c.size];
+		c.pmem = new T[c.capacity];
 		for (int i = 0; i < c.count; i++) {
 			is >> c.pmem[i];
 		}
 		return is;
 	}
 
+	int size() const noexcept {
+		return count;
+	}
+
 
 	/*
 	Container operator+(const Container& _c) {
-		Container res(size + _c.size);
-		for (int i = 0; i < size; i++) {
+		Container res(capacity + _c.capacity);
+		for (int i = 0; i < capacity; i++) {
 			res[i] = pmem[i];
 		}
-		for (int i = 0; i < _c.size; i++) {
-			res.pmem[i + size] = _c.pmem[i];
+		for (int i = 0; i < _c.capacity; i++) {
+			res.pmem[i + capacity] = _c.pmem[i];
 		}
 		return res;
 	}
@@ -173,9 +177,9 @@ public:
 	}
 
 	Container& operator+=(const Container& c) {
-		int old_size = size;
-		this->resize(c.size);
-		for (int i = 0; i < c.size; i++) {
+		int old_size = capacity;
+		this->resize(c.capacity);
+		for (int i = 0; i < c.capacity; i++) {
 			pmem[i + old_size] = c.pmem[i];
 		}
 		return *this;
@@ -183,7 +187,7 @@ public:
 
 
 	Container operator-(const Container& _c) {
-		int new_size = size - _c.size;
+		int new_size = capacity - _c.capacity;
 		if (new_size <= 0) {
 			throw "Новый размер должен быть больше 0";
 		}
@@ -206,8 +210,8 @@ public:
 	}
 
 	Container& operator-=(const Container& c) {
-		int old_size = size;
-		this->resize(-c.size);
+		int old_size = capacity;
+		this->resize(-c.capacity);
 		return *this;
 	}
 	*/
