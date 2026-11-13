@@ -72,7 +72,7 @@ class Calculator {
 		inf_cont.push_back(Token{ CloseBracket, ")", 0.0, 10 });
 	}
 public:
-	Calculator(const string& s = "") {
+	Calculator(const string& s = "") : oper(100), num(100) {
 		set_infix(s);
 	}
 	void set_infix(const string& s) {
@@ -133,6 +133,9 @@ public:
 		}
 		if (!oper.IsEmpty()) {
 			throw "Error";
+		}
+		if (post_cont.size() == 0) {
+			throw "Error"; // Только пробелы и/или ()
 		}
 		if (post_cont.size() > 0) {
 			postfix += post_cont[0].str;
