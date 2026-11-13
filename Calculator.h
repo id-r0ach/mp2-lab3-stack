@@ -87,8 +87,12 @@ public:
 	}
 
 	void to_postfix() {
+		if (inf_cont.size() == 0) {
+			throw "Error";
+		}
 		oper.clear();
 		post_cont.clear();
+		postfix = "";
 		for (int i = 0; i < inf_cont.size(); i++) {
 
 			if (inf_cont[i].type == OpenBracket) {
@@ -102,23 +106,33 @@ public:
 			}
 
 			if (inf_cont[i].type == CloseBracket) {
-				while (oper.top().type != OpenBracket) {
+				while (!oper.IsEmpty() && oper.top().type != OpenBracket) {
 					post_cont.push_back(oper.pop());
 				}
 				if (oper.IsEmpty()) {
-					throw "Error"; // была закрывающаяся скобка, но нет открывающейся скобки, после отладки удалить
+					throw "Error";
 				}
 				oper.pop();
 				continue;
 			}
 
 			if (inf_cont[i].type == Operation) {
-				while (inf_cont[i].priority <= oper.top().priority) {
-					post_cont.push_back(oper.pop());
+				if (inf_cont[i].str == "^") {
+					while (!oper.IsEmpty() && inf_cont[i].priority < oper.top().priority) {
+						post_cont.push_back(oper.pop());
+					}
+				}
+				else {
+					while (!oper.IsEmpty() && inf_cont[i].priority <= oper.top().priority) {
+						post_cont.push_back(oper.pop());
+					}
 				}
 				oper.push(inf_cont[i]);
 				continue;
 			}
+		}
+		if (!oper.IsEmpty()) {
+			throw "Error";
 		}
 		if (post_cont.size() > 0) {
 			postfix += post_cont[0].str;
@@ -175,6 +189,14 @@ public:
 			throw "Error";
 		}
 		return ans;
+	}
+
+	string getInfix() const {
+		return infix;
+	}
+
+	string getPostfix() const {
+		return postfix;
 	}
 };
 
