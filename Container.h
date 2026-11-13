@@ -114,6 +114,25 @@ public:
 		count = 0;
 	}
 
+	bool operator==(const Container& c) const {
+		if (this == &c) {
+			return true;
+		}
+		if (this->size() != c.size()) {
+			return false;
+		}
+		for (int i = 0; i < this->size(); i++) {
+			if ((*this)[i] != c[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool operator!=(const Container& c) const {
+		return !(*this == c);
+	}
+
 	/*
 	void resize(const int& _size) {
 		int new_size = capacity + _size;
