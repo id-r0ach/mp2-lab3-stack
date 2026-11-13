@@ -201,5 +201,16 @@ public:
 	string getPostfix() const {
 		return postfix;
 	}
+
+	friend std::ostream& operator<<(std::ostream& os, const Calculator& c) {
+		os << c.infix;
+		return os;	
+	}
+	friend std::istream& operator>>(std::istream& is, Calculator& c) {
+		string s;
+		getline(is, s);
+		c.set_infix(s);
+		return is;
+	}
 };
 
