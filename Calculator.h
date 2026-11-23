@@ -7,15 +7,11 @@
 #include "TDynamicStack.h"
 #include <cmath>
 
-// Дописать приоритизацию
-// Дописать теста
-// Добавить проверку на пустой стек в префикс
-
 using std::string;
 
 class Calculator {
 	string infix, postfix;
-	Container<Token> inf_cont, post_cont;
+	Container<Token> inf_cont;
 	TDynamicStack<Token> oper;
 	TDynamicStack<double> num;
 	void infix_to_cont() {
@@ -71,6 +67,28 @@ class Calculator {
 		}
 		inf_cont.push_back(Token{ CloseBracket, ")", 0.0, 10 });
 	}
+
+	void apply_op() {
+		if (oper.IsEmpty()) throw "Error";
+		Token op = oper.pop();
+		if (num.IsEmpty()) throw "Error";
+		double right = num.pop();
+		if (num.IsEmpty()) throw "Error";
+		double left = num.pop();
+
+		double res = 0;
+		if (op.str == "+") res = left + right;
+		else if (op.str == "-") res = left - right;
+		else if (op.str == "*") res = left * right;
+		else if (op.str == "/") {
+			if (right == 0) throw "Error";
+			res = left / right;
+		}
+		else if (op.str == "^") res = std::pow(left, right);
+		else throw "Error";
+
+		num.push(res);
+	}
 public:
 	Calculator(const string& s = "") : oper(100), num(100) {
 		set_infix(s);
@@ -79,112 +97,55 @@ public:
 		infix = s;
 		postfix = "";
 		inf_cont.clear();
-		post_cont.clear();
 		// Если s = "", то скип, иначе разбиваем строку на токены
 		if (!infix.empty()) {
 			infix_to_cont();
 		}
 	}
-
-	void to_postfix() {
-		if (inf_cont.size() == 0) {
-			throw "Error";
-		}
+	double CalcPostfix() {
+		num.clear();
 		oper.clear();
-		post_cont.clear();
-		postfix = "";
 		for (int i = 0; i < inf_cont.size(); i++) {
+
+			if (inf_cont[i].type == Number) {
+				num.push(inf_cont[i].val);
+					continue;
+				}
+
+			// Много дубликата кода, надо подумать как это вынести
+			if (inf_cont[i].type == Operation) {
+				if (inf_cont[i].str == "^") {
+					while (!oper.IsEmpty() && inf_cont[i].priority < oper.top().priority) {
+						apply_op();
+					}
+				}
+				else {
+					while (!oper.IsEmpty() && inf_cont[i].priority <= oper.top().priority) {
+						apply_op();
+					}
+				}
+				oper.push(inf_cont[i]);
+				continue;
+			}
 
 			if (inf_cont[i].type == OpenBracket) {
 				oper.push(inf_cont[i]);
 				continue;
 			}
 
-			if (inf_cont[i].type == Number) {
-				post_cont.push_back(inf_cont[i]);
-				continue;
-			}
-
 			if (inf_cont[i].type == CloseBracket) {
-				while (!oper.IsEmpty() && oper.top().type != OpenBracket) {
-					post_cont.push_back(oper.pop());
+				while (oper.top().type != OpenBracket) {
+					apply_op();
 				}
 				if (oper.IsEmpty()) {
 					throw "Error";
 				}
 				oper.pop();
 				continue;
-			}
 
-			if (inf_cont[i].type == Operation) {
-				if (inf_cont[i].str == "^") {
-					while (!oper.IsEmpty() && inf_cont[i].priority < oper.top().priority) {
-						post_cont.push_back(oper.pop());
-					}
-				}
-				else {
-					while (!oper.IsEmpty() && inf_cont[i].priority <= oper.top().priority) {
-						post_cont.push_back(oper.pop());
-					}
-				}
-				oper.push(inf_cont[i]);
-				continue;
 			}
 		}
-		if (!oper.IsEmpty()) {
-			throw "Error";
-		}
-		if (post_cont.size() == 0) {
-			throw "Error"; // Только пробелы и/или ()
-		}
-		if (post_cont.size() > 0) {
-			postfix += post_cont[0].str;
-			for (int i = 1; i < post_cont.size(); i++) {
-				postfix += " " + post_cont[i].str;
-			}
-		}
-	}
-
-	double CalcPostfix() {
-		num.clear();
-		for (int i = 0; i < post_cont.size(); i++) {
-			if (post_cont[i].type == Number) {
-				num.push(post_cont[i].val);
-					continue;
-				}
-			if (post_cont[i].type == Operation) {
-				double right, left, res;
-				if (num.IsEmpty()) {
-					throw "Error"; // Стек пустой, после отладки удалить
-				}
-				right = num.pop();
-				if (num.IsEmpty()) {
-					throw "Error"; // Стек пустой, после отладки удалить
-				}
-				left = num.pop();
-				if (post_cont[i].str == "+") {
-					res = left + right;
-				}
-				if (post_cont[i].str == "-") {
-					res = left - right;
-				}
-				if (post_cont[i].str == "*") {
-					res = left * right;
-				}
-				if (post_cont[i].str == "/") {
-					if (right == 0) {
-						throw "Error"; // Деление на ноль
-					}
-					res = left / right;
-				}
-				if (post_cont[i].str == "^") {
-					res = pow(left, right);
-				}
-				num.push(res);
-				continue;
-			}
-		}
-		if (num.IsEmpty()) {
+		if (num.IsEmpty() || !oper.IsEmpty()) {
 			throw "Error"; // Нет ответа, после отладки удалить
 		}
 		double ans = num.pop();
@@ -196,10 +157,6 @@ public:
 
 	string getInfix() const {
 		return infix;
-	}
-
-	string getPostfix() const {
-		return postfix;
 	}
 
 	friend std::ostream& operator<<(std::ostream& os, const Calculator& c) {
