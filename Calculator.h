@@ -153,10 +153,12 @@ class Calculator {
 			//else if (op.str == "tg") res = std::tan(right);
 			else if (op.str == "tg") {
 				t = std::cos(right);
+				if (fabs(t) <= 1e-12) throw "Error";
 				res = std::sin(right) / t;
 			}
 			else if (op.str == "ctg") {
 				t = std::sin(right);
+				if (fabs(t) <= 1e-12) throw "Error";
 				res = std::cos(right) / t;
 			}
 			else if (op.str == "exp") res = std::exp(right);
