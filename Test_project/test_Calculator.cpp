@@ -1,4 +1,4 @@
-#include "..\Calculator.h"
+#include "..\sln\Calculator.h"
 #include "gtest.h"
 #include <cmath>
 
