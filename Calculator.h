@@ -7,6 +7,8 @@
 #include "TDynamicStack.h"
 #include <cmath>
 
+// CalcPostfix -> Calc
+
 using std::string;
 
 class Calculator {
@@ -14,6 +16,7 @@ class Calculator {
 	Container<Token> inf_cont;
 	TDynamicStack<Token> oper;
 	TDynamicStack<double> num;
+
 	void infix_to_cont() {
 		inf_cont.clear();
 		inf_cont.push_back(Token{ OpenBracket, "(", 0.0, 0 });
@@ -48,6 +51,10 @@ class Calculator {
 				continue;
 			}
 			if (infix[i] == '+' || infix[i] == '-' || infix[i] == '*' || infix[i] == '/' || infix[i] == '^') {
+				if ((infix[i] == '-' || infix[i] == '+') && inf_cont[inf_cont.size() - 1].type == OpenBracket) {
+					inf_cont.push_back(Token{ Number, "0", 0});
+
+				}
 				t_op.type = Operation;
 				t_op.str = infix[i];
 				if (infix[i] == '+' || infix[i] == '-') {
@@ -63,20 +70,110 @@ class Calculator {
 				i++;
 				continue;
 			}
+			if (infix[i] == 's') {
+				if ((i + 2 <= infix.size() - 1) && (infix.substr(i, 3) == "sin")) {
+					t_op.type = Function;
+					t_op.str = "sin";
+					t_op.priority = 1;
+					inf_cont.push_back(t_op);
+					i += 3;
+					continue;
+				}
+			}
+			if (infix[i] == 'c') {
+				if (i + 2 <= infix.size() - 1) {
+					if (infix.substr(i, 3) == "cos") {
+						t_op.type = Function;
+						t_op.str = "cos";
+						t_op.priority = 1;
+						inf_cont.push_back(t_op);
+						i += 3;
+						continue;
+					}
+					if (infix.substr(i, 3) == "ctg") {
+						t_op.type = Function;
+						t_op.str = "ctg";
+						t_op.priority = 1;
+						inf_cont.push_back(t_op);
+						i += 3;
+						continue;
+					}
+				}
+			}
+
+			if (infix[i] == 't') {
+				if ((i + 1 <= infix.size() - 1) && (infix.substr(i, 2) == "tg")) {
+					t_op.type = Function;
+					t_op.str = "tg";
+					t_op.priority = 1;
+					inf_cont.push_back(t_op);
+					i += 2;
+					continue;
+				}
+			}
+
+			if (infix[i] == 'l') {
+				if ((i + 1 <= infix.size() - 1) && (infix.substr(i, 2) == "ln")) {
+					t_op.type = Function;
+					t_op.str = "ln";
+					t_op.priority = 1;
+					inf_cont.push_back(t_op);
+					i += 2;
+					continue;
+				}
+			}
+
+			if (infix[i] == 'e') {
+				if ((i + 2 <= infix.size() - 1) && (infix.substr(i, 3) == "exp")) {
+					t_op.type = Function;
+					t_op.str = "exp";
+					t_op.priority = 3;
+					inf_cont.push_back(t_op);
+					i += 3;
+					continue;
+				}
+			}
+
 			throw "Error"; // недопустимый символ
 		}
 		inf_cont.push_back(Token{ CloseBracket, ")", 0.0, 10 });
 	}
 
 	void apply_op() {
+		double res = 0;
 		if (oper.IsEmpty()) throw "Error";
 		Token op = oper.pop();
 		if (num.IsEmpty()) throw "Error";
 		double right = num.pop();
+
+		if (op.type == Function) {
+			double t;
+			if (op.str == "sin") res = std::sin(right);
+			else if (op.str == "cos") res = std::cos(right);
+			//else if (op.str == "tg") res = std::tan(right);
+			else if (op.str == "tg") {
+				t = std::cos(right);
+				res = std::sin(right) / t;
+			}
+			else if (op.str == "ctg") {
+				t = std::sin(right);
+				res = std::cos(right) / t;
+			}
+			else if (op.str == "exp") res = std::exp(right);
+			else if (op.str == "ln") {
+				if (right <= 0) {
+					throw "Error";
+				}
+				res = std::log(right);
+			}
+			num.push(res);
+			return;	
+		}
+
 		if (num.IsEmpty()) throw "Error";
 		double left = num.pop();
 
-		double res = 0;
+
 		if (op.str == "+") res = left + right;
 		else if (op.str == "-") res = left - right;
 		else if (op.str == "*") res = left * right;
@@ -102,7 +199,9 @@ public:
 			infix_to_cont();
 		}
 	}
-	double CalcPostfix() {
+
+
+	double Calc() {
 		num.clear();
 		oper.clear();
 		for (int i = 0; i < inf_cont.size(); i++) {
@@ -111,8 +210,6 @@ public:
 				num.push(inf_cont[i].val);
 					continue;
 				}
-
-			// Много дубликата кода, надо подумать как это вынести
 			if (inf_cont[i].type == Operation) {
 				if (inf_cont[i].str == "^") {
 					while (!oper.IsEmpty() && inf_cont[i].priority < oper.top().priority) {
@@ -128,19 +225,30 @@ public:
 				continue;
 			}
 
+			if (inf_cont[i].type == Function) {
+				if (i + 1 >= inf_cont.size() || inf_cont[i + 1].type != OpenBracket) {
+					throw "Error";
+				}
+				oper.push(inf_cont[i]);
+				continue;
+			}
+
 			if (inf_cont[i].type == OpenBracket) {
 				oper.push(inf_cont[i]);
 				continue;
 			}
 
 			if (inf_cont[i].type == CloseBracket) {
-				while (oper.top().type != OpenBracket) {
+				while (!oper.IsEmpty() && oper.top().type != OpenBracket) {
 					apply_op();
 				}
 				if (oper.IsEmpty()) {
 					throw "Error";
 				}
 				oper.pop();
+				if (!oper.IsEmpty() && oper.top().type == Function) {
+					apply_op();
+				}
 				continue;
 
 			}
@@ -154,6 +262,9 @@ public:
 		}
 		return ans;
 	}
+
+
+
 
 	string getInfix() const {
 		return infix;

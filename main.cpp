@@ -11,7 +11,7 @@ int main() {
 	cout << "Enter a mathematical expression: ";
 	try {
 		cin >> calculator;
-		double res = calculator.CalcPostfix();
+		double res = calculator.Calc();
 		cout << "Infix_form: " << calculator.getInfix() << "\n";
 		cout << "Result: " << res;
 	}

@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 
-enum TokenType {Number, Operation, OpenBracket, CloseBracket};
+enum TokenType {Number, Operation, OpenBracket, CloseBracket, Function};
 
 struct Token {
 	TokenType type;
