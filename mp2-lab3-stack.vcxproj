@@ -139,16 +139,16 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Calculator.cpp" />
-    <ClCompile Include="Container.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="TDynamicStack.cpp" />
+    <ClCompile Include="sln\Calculator.cpp" />
+    <ClCompile Include="sln\Container.cpp" />
+    <ClCompile Include="sln\TDynamicStack.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Calculator.h" />
-    <ClInclude Include="Container.h" />
-    <ClInclude Include="TDynamicStack.h" />
-    <ClInclude Include="Token.h" />
+    <ClInclude Include="sln\Calculator.h" />
+    <ClInclude Include="sln\Container.h" />
+    <ClInclude Include="sln\TDynamicStack.h" />
+    <ClInclude Include="sln\Token.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

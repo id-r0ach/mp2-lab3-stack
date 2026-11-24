@@ -1,4 +1,4 @@
-#include "..\TDynamicStack.h"
+#include "..\sln\TDynamicStack.h"
 
 #include "gtest.h"
 #include <climits>
