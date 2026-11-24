@@ -133,8 +133,7 @@ namespace CppWinForm1 {
 		std::string infix;
 		infix = msclr::interop::marshal_as<std::string>(textBox1->Text);
 		Calculator calculator(infix);
-		calculator.to_postfix(); // потом удалить
-		double res = calculator.CalcPostfix(); // заменить на calc
+		double res = calculator.Calc(); // заменить на calc
 		label1->Text = Convert::ToString(res);
 	}
 	private: System::Void label2_Click(System::Object^ sender, System::EventArgs^ e) {}
