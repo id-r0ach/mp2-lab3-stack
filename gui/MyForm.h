@@ -1,4 +1,9 @@
-#pragma once
+﻿#pragma once
+#include <string>
+#include <msclr/marshal_cppstd.h>
+//#include "../sln/Token.h"
+#include "../sln/Calculator.h"
+
 
 namespace CppWinForm1 {
 
@@ -64,7 +69,7 @@ namespace CppWinForm1 {
 			// 
 			this->textBox1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(204)));
-			this->textBox1->Location = System::Drawing::Point(12, 15);
+			this->textBox1->Location = System::Drawing::Point(18, 15);
 			this->textBox1->Name = L"textBox1";
 			this->textBox1->Size = System::Drawing::Size(276, 30);
 			this->textBox1->TabIndex = 0;
@@ -117,14 +122,23 @@ namespace CppWinForm1 {
 			this->Controls->Add(this->textBox1);
 			this->Name = L"MyForm";
 			this->Text = L"MyForm";
+			this->Load += gcnew System::EventHandler(this, &MyForm::MyForm_Load);
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
 		}
 #pragma endregion
 	private: System::Void label1_Click(System::Object^ sender, System::EventArgs^ e) {}
-	private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {}
+	private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) {
+		std::string infix;
+		infix = msclr::interop::marshal_as<std::string>(textBox1->Text);
+		Calculator calculator(infix);
+		calculator.to_postfix(); // потом удалить
+		double res = calculator.CalcPostfix(); // заменить на calc
+		label1->Text = Convert::ToString(res);
+	}
 	private: System::Void label2_Click(System::Object^ sender, System::EventArgs^ e) {}
 private: System::Void textBox1_TextChanged(System::Object^ sender, System::EventArgs^ e) {}
+private: System::Void MyForm_Load(System::Object^ sender, System::EventArgs^ e) {}
 };
 }
