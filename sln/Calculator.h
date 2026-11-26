@@ -16,12 +16,14 @@ class Calculator {
 	Container<Token> inf_cont;
 	TDynamicStack<Token> oper;
 	TDynamicStack<double> num;
+	// Очень хочется использовать хеш таблицу, ооооочень
+	double varible[3] = { 0.0, 0.0, 0.0 };
 
 	void infix_to_cont() {
 		inf_cont.clear();
 		inf_cont.push_back(Token{ OpenBracket, "(", 0.0, 0 });
 		int i = 0;
-		Token t_num, t_op;
+		Token t_num, t_op, t_var;
 		while (i < infix.size()) {
 			if (infix[i] == ' ') {
 				i++;
@@ -134,6 +136,14 @@ class Calculator {
 				}
 			}
 
+			if (infix[i] == 'x' || infix[i] == 'y' || infix[i] == 'z') {
+				t_var.type = Variable;
+				t_var.str = infix[i];
+				inf_cont.push_back(t_var);
+				i++;
+				continue;
+			}
+
 			throw "Error"; // недопустимый символ
 		}
 		inf_cont.push_back(Token{ CloseBracket, ")", 0.0, 10 });
@@ -202,6 +212,12 @@ public:
 		}
 	}
 
+	void setvarible(double elem, int num) {
+		if (num >= 0 && num < 3) {
+			varible[num] = elem;
+		}
+	}
+
 
 	double Calc() {
 		num.clear();
@@ -212,6 +228,21 @@ public:
 				num.push(inf_cont[i].val);
 					continue;
 				}
+			if (inf_cont[i].type == Variable) {
+				// Очень хочется использовать хеш таблицу, ооооочень
+				int val;
+				if (inf_cont[i].str == "x") {
+					val = varible[0];
+				}
+				if (inf_cont[i].str == "y") {
+					val = varible[1];
+				}
+				if (inf_cont[i].str == "z") {
+					val = varible[2];
+				}
+				num.push(val);
+				continue;
+			}
 			if (inf_cont[i].type == Operation) {
 				if (inf_cont[i].str == "^") {
 					while (!oper.IsEmpty() && inf_cont[i].priority < oper.top().priority) {
